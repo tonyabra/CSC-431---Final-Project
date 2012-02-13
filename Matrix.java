@@ -4,9 +4,10 @@ class Matrix {
     private int rows;
     private int cols;
     
-    private float[][] data;
+    private double[][] data;
 
-    public Matrix(int rowsIn, int colsIn, float fill){
+    
+    public Matrix(int rowsIn, int colsIn, double fill){
 	//Iterator variables
 	int cCount, rCount;
 
@@ -19,9 +20,7 @@ class Matrix {
 	   for (cCount = 0; cCount < cols; ++cCount){
 	       data[rCount][cCount] = fill;
 	    }
-	}	
-	
-	
+	}		
     }
 
     //Function to return an item
