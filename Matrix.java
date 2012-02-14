@@ -212,6 +212,21 @@ class Matrix {
 	} 
     }
 
+    //Transpose
+    public static Matrix transpose (Matrix matA){
+
+	int rCount, cCount;
+	Matrix matT = new Matrix(matA.cols, matA.rows);
+
+	for (rCount = 0; rCount < matT.rows; rCount++){
+	  for (cCount = 0; cCount < matT.cols; cCount++){
+	      matT.setItem(rCount, cCount, matA.getItem(cCount, rCount));
+	  }
+	}	   
+
+	return matT;
+    }
+
     //A function to print the matrix
     public void printMatrix(){
 	int cCount, rCount;
