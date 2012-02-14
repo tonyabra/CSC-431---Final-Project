@@ -154,6 +154,54 @@ class Matrix {
 	return matC;
     }
 
+    public double scalar_mult(Matrix other) {
+  if (cols == 1 && other.cols == 1 && rows == other.rows) {
+      double sum = 0.;
+      for (int r = 0; r < rows; r++)
+          sum += getItem(r, 0)*other.getItem(r, 0);
+
+      return sum;
+  }
+  else throw new ArithmeticException("Incorrect matrix dimensions");
+    }
+
+    public static Matrix mult(Matrix A, double[] B_values) {
+  double[][] B_values_fill = new double[B_values.length][1];
+  for (int i = 0; i < B_values.length; i++)
+      B_values_fill[i][0] = B_values[i];
+
+  Matrix B = new Matrix(B_values.length, 1, B_values_fill);
+  System.out.println("B:");
+  B.printMatrix();
+  System.out.println();
+  return mult(A, B);
+    }
+
+    /*
+     * M = Matrix(A.rows,B.cols)
+     * for r in xrange(A.rows):
+     *     for c in xrange(B.cols):
+     *         for k in xrange(A.cols):
+     *             M[r,c] += A[r,k]*B[k,c]
+     */
+    public static Matrix mult(Matrix A, Matrix B) {
+  if (A.cols != B.rows)
+      throw new ArithmeticException("Incorrect matrix dimensions");
+
+        Matrix result = new Matrix(A.rows, B.cols);
+  for (int r = 0; r < A.rows; r++) {
+      for (int c = 0; c < B.cols; c++) {
+    for (int k = 0; k < A.cols; k++) {
+        double left  = A.getItem(r, k);
+        double right = B.getItem(k, c);
+        double old = result.getItem(r, c);
+        result.setItem(r, c, old+left*right);
+    }
+      }
+  }
+  return result;
+    }
+
     //Helper function to ensure the dimensions are the same
     public boolean checkDimensions(Matrix matA, Matrix matB){
 	if ((matA.cols == matB.cols) && (matA.rows == matB.rows)){
@@ -207,6 +255,25 @@ class Matrix {
 	Matrix threeMatrix = testMatrix.add(testMatrix, newMatrix);
 
 	threeMatrix.printMatrix();
-	
+
+  double[][] matA_values = {
+      { 14, 9,  3  },
+      { 2,  11, 15 },
+      { 0,  12, 17 },
+      { 5,  2,  3  }
+  };
+
+  double[][] matB_values = {
+      { 12, 25 },
+      { 9,  10 },
+      { 8,  5  }
+  };
+
+  Matrix matA = new Matrix(4, 3, matA_values);
+  Matrix matB = new Matrix(3, 2, matB_values);
+  mult(matA, matB).printMatrix();
+
+  double[] matC_values = { 2, 3, 4 };
+  mult(matA, matC_values).printMatrix();	
     }
 }
