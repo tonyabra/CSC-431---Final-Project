@@ -110,12 +110,24 @@ class Matrix {
     }
 
     //Function to create the identity matrix
-    public Matrix identity(int rows){
+    public static Matrix identity(int rows){
 	int rCount;
 	Matrix retMatrix = new Matrix(rows, rows);
 
 	for (rCount = 0; rCount < rows; ++rCount){
 	    retMatrix.setItem(rCount, rCount, 1);
+	}
+
+	return retMatrix;
+    }
+
+    //Function to create the identity matrix with a value
+    public static Matrix identity(int rows,  float colVal){
+	int rCount;
+	Matrix retMatrix = new Matrix(rows, rows);
+
+	for (rCount = 0; rCount < rows; ++rCount){
+	    retMatrix.setItem(rCount, rCount, colVal);
 	}
 
 	return retMatrix;
@@ -134,7 +146,7 @@ class Matrix {
     }
 
     //Adds to matrices together provided they have the same dimensions
-    public Matrix add (Matrix matA, Matrix matB){
+    public static Matrix add (Matrix matA, Matrix matB){
 	
 	int rCount, cCount;
 	Matrix matC = null;
@@ -202,14 +214,140 @@ class Matrix {
   return result;
     }
 
+	
+	public static Matrix rDiv(Matrix A, float x){
+		int n = A.cols;
+		Matrix B = Matrix.identity(n,x);
+				
+		if(A.rows != A.cols)
+			throw new RuntimeException("matrix not squared");
+		for(int c=0; c< n; c++){
+			for(int r=c+1; r<n; r++){
+				double f = A.getItem(r,c);
+				
+				if ( Math.abs(A.getItem(r,c)) > Math.abs(A.getItem(c,c)) ){
+					swap_rows(A,r,c);
+					swap_rows(B,r,c);
+				}
+				
+			}
+			double p = 0.0+ A.getItem(c,c);
+			
+			for(int k=0; k<n; k++){
+				A.setItem(c,k, (A.getItem(c,k))/p);
+				B.setItem(c,k, (B.getItem(c,k))/p); //B[c,k] = B[c,k]/p
+			}
+			
+			for(int r=0;r<n; r++){
+				p = 0.0+ A.getItem(r,c);				
+				for (int k=0;k<n; k++){
+					if (k == c) continue;					
+					A.data[r][k] -= (A.data[c][k])*p; //A[r,k] -= A[c,k]*p
+	                B.data[r][k] -= (B.data[c][k])*p; //B[r,k] -= B[c,k]*p												
+				}
+			}
+			
+		}
+		return B;	
+	}
+	
+	public static Matrix div(Matrix A, Matrix B){
+		Matrix C = Matrix.rDiv(B,1);
+		return mult(A, C);
+		
+	}
+	
+	
+	static void swap_rows(Matrix A, int i,int j){
+		double tempVal = 0;		
+		for(int c=0; c<A.cols; c++){
+			tempVal = A.data[i][c];			
+			A.data[i][c] = A.data[j][c];
+			A.data[j][c] = tempVal;
+		}		
+				
+  	}
+
+
+
     //Helper function to ensure the dimensions are the same
-    public boolean checkDimensions(Matrix matA, Matrix matB){
+    public static boolean checkDimensions(Matrix matA, Matrix matB){
 	if ((matA.cols == matB.cols) && (matA.rows == matB.rows)){
 	   return true;
 	 }
 	else{
 	    return false;
 	} 
+    }
+
+    //Subtracts the matrices, element by element, provided that the two matrices are
+    //of the same dimensions 
+    public static Matrix subtract(Matrix matA, Matrix matB){
+
+    	int rCount, cCount;
+    	Matrix matS = null;
+
+    	if (checkDimensions(matA, matB)){
+
+    	    matS = new Matrix(matA.rows, matB.rows);
+
+    	    for (rCount = 0; rCount < matS.rows; rCount++){
+    	    	for (cCount = 0; cCount < matS.cols; cCount++){
+    	    		matS.setItem(rCount, cCount, matA.getItem(rCount, cCount)
+    	    									- matB.getItem(rCount, cCount));
+    		}
+    	    }	   
+
+    	}
+
+    	return matS;
+        }    
+        
+     //Adds the matrices in reverse order
+    //Note:Dimensions checked by add function already
+    public static Matrix rAdd(Matrix matA, Matrix matB)
+    {
+    	return add(matB,matA);
+    	
+    }
+        
+    //Function that reverses the order of subtraction for the two matrices by copying and negating all values of 
+    //the first matrix into a new matrix, which is added to the second matrix
+    //Note:Dimension is checked already by add function
+    public static Matrix rSubtract(Matrix matA, Matrix matB){
+
+    	Matrix matRS = null;
+
+    	    matRS = new Matrix(matA.rows, matB.rows);
+    	    Matrix matNA = new Matrix(matA.rows, matA.cols);
+    	   
+    	    for ( int rCount=0; rCount<matNA.rows; rCount++)
+    	    {
+    	      for ( int cCount=0; cCount<matNA.cols; cCount++ )
+    	    {
+    	    	  matNA.setItem(rCount,cCount, (-1) *matA. getItem(rCount,cCount));
+    	    }
+    	    
+    	    }
+
+    	      matRS = add(matNA, matB);
+
+    	return matRS;
+        }    
+    
+  //A function to negate a matrix
+    public static Matrix negate(Matrix matA){
+    
+    	Matrix matNA = new Matrix(matA.rows, matA.cols);
+    	for ( int rCount=0; rCount<matNA.rows; rCount++)
+	    {
+	      for ( int cCount=0; cCount<matNA.cols; cCount++ )
+	      {
+	    	  matNA.setItem(rCount,cCount, (-1) *matA. getItem(rCount,cCount));
+	      }
+
+	    }
+    	return matNA;
     }
 
     //Transpose
@@ -267,28 +405,22 @@ class Matrix {
 	testMatrix = newMatrix.diagonal(vals);
 	newMatrix = newMatrix.identity(4);
 	
+	testMatrix = newMatrix.diagonal(vals);
+	newMatrix = newMatrix.identity(4,1);
+	
 	Matrix threeMatrix = testMatrix.add(testMatrix, newMatrix);
 
 	threeMatrix.printMatrix();
 
-  double[][] matA_values = {
-      { 14, 9,  3  },
-      { 2,  11, 15 },
-      { 0,  12, 17 },
-      { 5,  2,  3  }
-  };
+	Matrix a = Matrix.identity(2,1);
+	
+	System.out.println("Printing.....rDiv...a is...");
+	//testMatrix.printMatrix();
+	a.printMatrix();
+	Matrix b = rDiv(a,3);
+	Matrix c = div(a,a);
+	System.out.println("The result of div is...");
+	c.printMatrix();
 
-  double[][] matB_values = {
-      { 12, 25 },
-      { 9,  10 },
-      { 8,  5  }
-  };
-
-  Matrix matA = new Matrix(4, 3, matA_values);
-  Matrix matB = new Matrix(3, 2, matB_values);
-  mult(matA, matB).printMatrix();
-
-  double[] matC_values = { 2, 3, 4 };
-  mult(matA, matC_values).printMatrix();	
     }
 }
