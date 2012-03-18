@@ -125,6 +125,60 @@ public class Numeric {
 	}
 	return true;
     }
+    
+    public static Matrix FitLeastSquares(double[][] listOfPoints, MyFunctionInterface[] listOfFunctions){
+    	int sizeOfPoints = listOfPoints.length;
+    	int sizeOfFunctions = listOfFunctions.length;
+    	MyFunctionInterface functionObj = null;
+    	double funcReturn = 0;
+    	double weight = 0;
+    	Matrix A = new Matrix(sizeOfPoints, sizeOfFunctions);
+    	Matrix b = new Matrix(sizeOfPoints, 0);//Check if this OK
+    	Matrix c = null;
+    	int nbrOfRows = A.rowCount();
+    	for(int i=0; i< nbrOfRows; i++){
+    	if((listOfPoints[i]).length > 2){
+    	weight = 1/listOfPoints[i][2];
+    	}else{
+    	weight = 1;
+    	}
+    	b.setItem(i,0,weight*listOfPoints[i][0]);
+    	for(int j=0; j<A.colCount(); j++){
+    	/*get the passed function, which is an implementation of MyFunctionInterface*/
+    	functionObj = listOfFunctions[j];
+    	funcReturn = functionObj.function(listOfPoints[i][0]);
+    	A.setItem(i,j,weight*funcReturn );
+    	}
+    	}
+    	c = Matrix.rDiv( (Matrix.mult(Matrix.transpose(A),A)),1);
+
+    	return c;
+    	}
+
+
+    	interface MyFunctionInterface {
+    	    double function(double x);
+    	}
+    	class MyFunctionImpl implements MyFunctionInterface {
+    	public double function(double x){
+    	return x*x;
+    	}
+    	}
+
+        static class MyFunctionImplOne implements MyFunctionInterface {
+        	public double function(double x){
+        	return x*x;
+        	}
+        	}
+
+        	static class MyFunctionImplTwo implements MyFunctionInterface {
+        	public double function(double x){
+        	return x*x*x;
+        	}
+        	}
+
+    	
+
 
     //Self-explanatory function to determine how close to zero Matrix values are
     public static boolean is_almost_zero(Matrix matrix) {
@@ -743,6 +797,16 @@ public class Numeric {
        	   System.out.println(optimize_secant(f,3.0));
        	   System.out.println(optimize_newton_stabilized(f, 2.0, 5.0));
        	   System.out.println(optimize_golden_search(f,2.0,5.0));
+       	   
+           MyFunctionImplOne functionOne = new MyFunctionImplOne();
+           MyFunctionImplTwo functionTwo = new MyFunctionImplTwo();
+
+//           MyFunctionInterface[] listOfFunctions = {functionOne, functionTwo };
+//           double[][] listOfPoints = {{20,12,1},{13,14,1},{50,82,1}};
+//           Matrix coef = FitLeastSquares(listOfPoints, listOfFunctions);
+//           System.out.println("coef result is...------------:");
+//           coef.printMatrix();
+           
 	    }
 }
 
